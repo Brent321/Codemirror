@@ -1,17 +1,19 @@
 import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import { defaultKeymap, indentWithTab } from '@codemirror/commands';
-import { javascript } from '@codemirror/lang-javascript';
 import { EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
+import { linter, lintKeymap, lintGutter } from '@codemirror/lint'
 import { basicSetup } from 'codemirror';
+import { json, jsonParseLinter } from '@codemirror/lang-json'
+import { foldGutter, indentOnInput } from '@codemirror/language'
 
-interface CodeEditorProps{
+interface CodeEditorProps {
     setCode: Dispatch<SetStateAction<string>>;
 }
 
 export function Editor(props: CodeEditorProps) {
     const editorRef = useRef<HTMLDivElement>(null);
-    
+
     const onUpdate = EditorView.updateListener.of((viewUpdate) => {
         props.setCode(viewUpdate.state.doc.toString());
     });
@@ -22,7 +24,10 @@ export function Editor(props: CodeEditorProps) {
             extensions: [
                 basicSetup,
                 keymap.of([defaultKeymap as any, indentWithTab]),
-                javascript(),
+                json(),
+                foldGutter(),
+                indentOnInput(),
+                linter(jsonParseLinter()),
                 onUpdate,
             ],
         });
